@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"errors"
+	"log"
 	"sync"
 )
 
@@ -62,7 +63,14 @@ func (w *Worker) execute() {
 			if !ok {
 				return
 			}
-			task()
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						log.Printf("task panic recovered: %v", r)
+					}
+				}()
+				task()
+			}()
 		}
 	}
 }
